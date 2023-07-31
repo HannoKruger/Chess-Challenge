@@ -7,48 +7,86 @@ namespace ChessChallenge.Example
     // Plays randomly otherwise.
     public class EvilBot : IChessBot
     {
-        // Piece values: null, pawn, knight, bishop, rook, queen, king
-        int[] pieceValues = { 0, 100, 300, 300, 500, 900, 10000 };
+        Random rnd = new();
+        const int MAX_INT = int.MaxValue / 2;
+        const int MIN_INT = -MAX_INT;
+
+        static readonly int[] pieceValues = {
+            100, 320, 330, 500, 900, 0,
+            -100, -320, -330, -500, -900, 0
+        };
+
 
         public Move Think(Board board, Timer timer)
         {
-            Move[] allMoves = board.GetLegalMoves();
+            int depth = 4;
 
-            // Pick a random move to play if nothing better is found
-            Random rng = new();
-            Move moveToPlay = allMoves[rng.Next(allMoves.Length)];
-            int highestValueCapture = 0;
+            //Console.WriteLine("Evaluate: " + Evaluate(board));
 
-            foreach (Move move in allMoves)
+            var allMoves = board.GetLegalMoves();
+
+            if (allMoves.Length == 0)
+                throw new Exception("No legal moves found");
+
+            Move bestMove = allMoves[rnd.Next(0, allMoves.Length)];
+
+            int bestScore = int.MinValue;
+
+            foreach (var move in allMoves)
             {
-                // Always play checkmate in one
-                if (MoveIsCheckmate(board, move))
-                {
-                    moveToPlay = move;
-                    break;
-                }
+                board.MakeMove(move);
+                int score = -Negamax(board, depth - 1);
+                board.UndoMove(move);
 
-                // Find highest value capture
-                Piece capturedPiece = board.GetPiece(move.TargetSquare);
-                int capturedPieceValue = pieceValues[(int)capturedPiece.PieceType];
-
-                if (capturedPieceValue > highestValueCapture)
+                if (score > bestScore)
                 {
-                    moveToPlay = move;
-                    highestValueCapture = capturedPieceValue;
+                    bestScore = score;
+                    bestMove = move;
                 }
             }
 
-            return moveToPlay;
+            return bestMove;
         }
 
-        // Test if this move gives checkmate
-        bool MoveIsCheckmate(Board board, Move move)
+
+        int Evaluate(Board board)
         {
-            board.MakeMove(move);
-            bool isMate = board.IsInCheckmate();
-            board.UndoMove(move);
-            return isMate;
+            var pieceLists = board.GetAllPieceLists();
+            int score = 0;
+
+            for (int i = 0; i < pieceLists.Length; i++)
+            {
+                score += pieceLists[i].Count * pieceValues[i];
+            }
+
+            // If black is to move, reverse the score
+            if (!board.IsWhiteToMove)
+                score = -score;
+
+            return score;
+        }
+
+
+        int Negamax(Board board, int depth)
+        {
+            if (board.IsInCheckmate())
+                return MIN_INT - depth;
+            if (board.IsDraw())
+                return 0;
+            if (depth == 0)
+                return Evaluate(board);
+
+            int maxScore = MIN_INT;
+            foreach (var move in board.GetLegalMoves())
+            {
+                board.MakeMove(move);
+                int score = -Negamax(board, depth - 1);
+                board.UndoMove(move);
+
+                maxScore = Math.Max(score, maxScore);
+            }
+
+            return maxScore;
         }
     }
 }
