@@ -22,7 +22,7 @@ public class MyBot : IChessBot
         {
             board.MakeMove(move);
             int score = -Negamax(board, depth - 1);  // evaluate the board after making the move 
-            Console.WriteLine("score in eval: "+score);
+            //Console.WriteLine("score in eval: "+score);
             board.UndoMove(move);
 
             if (score > bestScore)
@@ -31,6 +31,8 @@ public class MyBot : IChessBot
                 bestMove = move;
             }
         }
+        //if (bestMove == allMoves[0])
+         //   Console.WriteLine("fallback move");
 
         return bestMove;
     }
