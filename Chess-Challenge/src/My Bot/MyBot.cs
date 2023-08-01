@@ -20,14 +20,14 @@ public class MyBot : IChessBot
 
     // White Knight
     {
-       -20, -10,  -10,  -10,  -10,  -10,  -10,  -20,
-    -10,  -5,   -5,   -5,   -5,   -5,   -5,  -10,
-    -10,  -5,   15,   15,   15,   15,   -5,  -10,
-    -10,  -5,   15,   15,   15,   15,   -5,  -10,
-    -10,  -5,   15,   15,   15,   15,   -5,  -10,
-    -10,  -5,   10,   15,   15,   15,   -5,  -10,
-    -10,  -5,   -5,   -5,   -5,   -5,   -5,  -10,
-    -20,   0,  -10,  -10,  -10,  -10,    0,  -20
+        -20, -10,  -10,  -10,  -10,  -10,  -10,  -20,
+        -10,  -5,   -5,   -5,   -5,   -5,   -5,  -10,
+        -10,  -5,   15,   15,   15,   15,   -5,  -10,
+        -10,  -5,   15,   15,   15,   15,   -5,  -10,
+        -10,  -5,   15,   15,   15,   15,   -5,  -10,
+        -10,  -5,   10,   15,   15,   15,   -5,  -10,
+        -10,  -5,   -5,   -5,   -5,   -5,   -5,  -10,
+        -20,   0,  -10,  -10,  -10,  -10,    0,  -20
     },
 
     // White Bishop
@@ -44,14 +44,14 @@ public class MyBot : IChessBot
 
     // White Rook
     {
-          0,   0,   0,   0,   0,   0,   0,   0,
-           15,  15,  15,  20,  20,  15,  15,  15,
-            0,   0,   0,   0,   0,   0,   0,   0,
-            0,   0,   0,   0,   0,   0,   0,   0,
-            0,   0,   0,   0,   0,   0,   0,   0,
-            0,   0,   0,   0,   0,   0,   0,   0,
-            0,   0,   0,   0,   0,   0,   0,   0,
-            0,   0,   0,  10,  10,  10,   0,   0
+        0,   0,   0,   0,   0,   0,   0,   0,
+        15,  15,  15,  20,  20,  15,  15,  15,
+        0,   0,   0,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0,   0,   0,
+        0,   0,   0,   0,   0,   0,   0,   0,
+        0,   0,   0,  10,  10,  10,   0,   0
     },
 
     // White Queen
@@ -121,14 +121,15 @@ public class MyBot : IChessBot
         return bestMove;
     }
 
-    int EvaluateSide(Board board,PieceList[] pieces, bool isWhite)
+    int EvaluateSide(Board board, PieceList[] pieces, bool isWhite)
     {
         int score = 0;
 
         for (int i = 0; i < 6; i++)
         {
             //material score
-            int count = pieces[isWhite ? i : i + 6].Count;
+            int piece = isWhite ? i : i + 6;
+            int count = pieces[piece].Count;
             score += count * pieceValues[i];
 
             //position score
@@ -137,7 +138,7 @@ public class MyBot : IChessBot
             while (bitboard > 0)
             {
                 int pos = BitboardHelper.ClearAndGetIndexOfLSB(ref bitboard);
-                score += isWhite ? pieceSquareTables[i, pos] : pieceSquareTables[i, 63 - pos];
+                score += isWhite ? pieceSquareTables[piece, pos] : pieceSquareTables[piece, 63 - pos];
             }
         }
 
@@ -147,11 +148,11 @@ public class MyBot : IChessBot
     int Evaluate(Board board)
     {
         PieceList[] pieceLists = board.GetAllPieceLists();
-        Debug.Assert(pieceLists.Length == 12,"piece list too short");
+        Debug.Assert(pieceLists.Length == 12, "piece list too short");
         int score = 0;
 
-        score += EvaluateSide(board,pieceLists, true);
-        score -= EvaluateSide(board,pieceLists, false);
+        score += EvaluateSide(board, pieceLists, true);
+        score -= EvaluateSide(board, pieceLists, false);
 
         // If black is to move, reverse the score
         if (!board.IsWhiteToMove)
