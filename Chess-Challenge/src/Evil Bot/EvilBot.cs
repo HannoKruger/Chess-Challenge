@@ -7,21 +7,20 @@ namespace ChessChallenge.Example
     // Plays randomly otherwise.
     public class EvilBot : IChessBot
     {
-        Random rnd = new();
+        Random rnd = new(100);
         const int MAX_INT = int.MaxValue / 2;
         const int MIN_INT = -MAX_INT;
 
         static readonly int[] pieceValues = {
-            100, 320, 330, 500, 900, 0,
-            -100, -320, -330, -500, -900, 0
+        100, 320, 330, 500, 800, 0,
+        -100, -320, -330, -500, -800, 0
         };
-
 
         public Move Think(Board board, Timer timer)
         {
-            int depth = 4;
-
-            //Console.WriteLine("Evaluate: " + Evaluate(board));
+            int depth = 5;
+            int alpha = MIN_INT;
+            int beta = MAX_INT;
 
             var allMoves = board.GetLegalMoves();
 
@@ -30,12 +29,12 @@ namespace ChessChallenge.Example
 
             Move bestMove = allMoves[rnd.Next(0, allMoves.Length)];
 
-            int bestScore = int.MinValue;
+            int bestScore = MIN_INT;
 
             foreach (var move in allMoves)
             {
                 board.MakeMove(move);
-                int score = -Negamax(board, depth - 1);
+                int score = -Negamax(board, depth - 1, -beta, -alpha);
                 board.UndoMove(move);
 
                 if (score > bestScore)
@@ -43,11 +42,12 @@ namespace ChessChallenge.Example
                     bestScore = score;
                     bestMove = move;
                 }
+
+                alpha = Math.Max(alpha, score);
             }
 
             return bestMove;
         }
-
 
         int Evaluate(Board board)
         {
@@ -56,8 +56,19 @@ namespace ChessChallenge.Example
 
             for (int i = 0; i < pieceLists.Length; i++)
             {
-                score += pieceLists[i].Count * pieceValues[i];
+                //material
+                int count = pieceLists[i].Count;
+                score += count * pieceValues[i];
+
+                //position
+                //for(int)
+                //bool isWhite = i < 6;
+                //board.GetPieceBitboard(PieceType.Pawn,)
+
+                //pieceLists[i]
+
             }
+
 
             // If black is to move, reverse the score
             if (!board.IsWhiteToMove)
@@ -66,8 +77,7 @@ namespace ChessChallenge.Example
             return score;
         }
 
-
-        int Negamax(Board board, int depth)
+        int Negamax(Board board, int depth, int alpha, int beta)
         {
             if (board.IsInCheckmate())
                 return MIN_INT - depth;
@@ -80,10 +90,14 @@ namespace ChessChallenge.Example
             foreach (var move in board.GetLegalMoves())
             {
                 board.MakeMove(move);
-                int score = -Negamax(board, depth - 1);
+                int score = -Negamax(board, depth - 1, -beta, -alpha);
                 board.UndoMove(move);
 
                 maxScore = Math.Max(score, maxScore);
+
+                alpha = Math.Max(alpha, score);
+                if (alpha >= beta)
+                    break;
             }
 
             return maxScore;
