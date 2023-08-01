@@ -8,30 +8,29 @@ public class MyBot : IChessBot
     const int MIN_INT = -MAX_INT;
 
     static readonly int[] pieceValues = {
-        100, 320, 330, 500, 900, 0,
-        -100, -320, -330, -500, -900, 0
+        100, 320, 330, 500, 800, 0,
+        -100, -320, -330, -500, -800, 0
     };
-
 
     public Move Think(Board board, Timer timer)
     {
-        int depth = 4;
+        int depth = 6;
+        int alpha = MIN_INT;
+        int beta = MAX_INT;
 
-        //Console.WriteLine("Evaluate: " + Evaluate(board));
-       
         var allMoves = board.GetLegalMoves();
 
-        if(allMoves.Length == 0)
+        if (allMoves.Length == 0)
             throw new Exception("No legal moves found");
 
-        Move bestMove = allMoves[rnd.Next(0,allMoves.Length)];
-       
-        int bestScore = int.MinValue;
+        Move bestMove = allMoves[rnd.Next(0, allMoves.Length)];
+
+        int bestScore = MIN_INT;
 
         foreach (var move in allMoves)
         {
             board.MakeMove(move);
-            int score = -Negamax(board, depth - 1);      
+            int score = -Negamax(board, depth - 1, -beta, -alpha);
             board.UndoMove(move);
 
             if (score > bestScore)
@@ -39,11 +38,12 @@ public class MyBot : IChessBot
                 bestScore = score;
                 bestMove = move;
             }
+
+            alpha = Math.Max(alpha, score);
         }
-      
+
         return bestMove;
     }
-
 
     int Evaluate(Board board)
     {
@@ -52,8 +52,19 @@ public class MyBot : IChessBot
 
         for (int i = 0; i < pieceLists.Length; i++)
         {
-            score += pieceLists[i].Count * pieceValues[i];
+            //material
+            int count = pieceLists[i].Count;
+            score += count * pieceValues[i];
+
+            //position
+            //for(int)
+            //bool isWhite = i < 6;
+            //board.GetPieceBitboard(PieceType.Pawn,)
+
+            //pieceLists[i]
+
         }
+        
 
         // If black is to move, reverse the score
         if (!board.IsWhiteToMove)
@@ -62,10 +73,9 @@ public class MyBot : IChessBot
         return score;
     }
 
-
-    int Negamax(Board board, int depth)
-    {     
-        if (board.IsInCheckmate())  
+    int Negamax(Board board, int depth, int alpha, int beta)
+    {
+        if (board.IsInCheckmate())
             return MIN_INT - depth;
         if (board.IsDraw())
             return 0;
@@ -74,12 +84,16 @@ public class MyBot : IChessBot
 
         int maxScore = MIN_INT;
         foreach (var move in board.GetLegalMoves())
-        {     
+        {
             board.MakeMove(move);
-            int score = -Negamax(board, depth - 1);
+            int score = -Negamax(board, depth - 1, -beta, -alpha);
             board.UndoMove(move);
 
             maxScore = Math.Max(score, maxScore);
+
+            alpha = Math.Max(alpha, score);
+            if (alpha >= beta)
+                break;
         }
 
         return maxScore;
