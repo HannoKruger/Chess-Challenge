@@ -7,7 +7,7 @@ namespace ChessChallenge.Example
     // Plays randomly otherwise.
     public class EvilBot : IChessBot
     {
-        Random rnd = new();
+        Random rnd = new(100);
         const int MAX_INT = int.MaxValue / 2;
         const int MIN_INT = -MAX_INT;
 
