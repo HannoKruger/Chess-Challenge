@@ -128,8 +128,7 @@ public class MyBot : IChessBot
         for (int i = 0; i < 6; i++)
         {
             //material score
-            int piece = isWhite ? i : i + 6;
-            int count = pieces[piece].Count;
+            int count = pieces[isWhite ? i : i + 6].Count;
             score += count * pieceValues[i];
 
             //position score
@@ -138,7 +137,7 @@ public class MyBot : IChessBot
             while (bitboard > 0)
             {
                 int pos = BitboardHelper.ClearAndGetIndexOfLSB(ref bitboard);
-                score += isWhite ? pieceSquareTables[piece, pos] : pieceSquareTables[piece, 63 - pos];
+                score += isWhite ? pieceSquareTables[i, pos] : pieceSquareTables[i, 63 - pos];
             }
         }
 
